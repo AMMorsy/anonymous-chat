@@ -7,7 +7,6 @@
     "dev": "ts-node-dev --respawn --transpile-only server/_core/index.ts",
     "build": "tsc",
     "start": "node dist/server/_core/index.js"
-
   },
   "dependencies": {
     "@trpc/client": "^10.45.0",
@@ -15,11 +14,11 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "socket.io": "^4.7.2",
-    "tsconfig-paths": "^4.2.0"
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.2.2"
   },
   "devDependencies": {
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.2.2"
+    "ts-node-dev": "^2.0.0"
   }
 }
