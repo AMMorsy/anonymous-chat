@@ -21,7 +21,14 @@ export const systemRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const delivered = await notifyOwner(input);
+      // Explicitly satisfy NotificationPayload at type level
+      const payload = {
+        title: input.title,
+        content: input.content,
+      };
+
+      const delivered = await notifyOwner(payload);
+
       return {
         success: delivered,
       } as const;

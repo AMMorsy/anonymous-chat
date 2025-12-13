@@ -18,7 +18,12 @@ exports.systemRouter = (0, trpc_1.router)({
         content: zod_1.z.string().min(1, "content is required"),
     }))
         .mutation(async ({ input }) => {
-        const delivered = await (0, notification_1.notifyOwner)(input);
+        // Explicitly satisfy NotificationPayload at type level
+        const payload = {
+            title: input.title,
+            content: input.content,
+        };
+        const delivered = await (0, notification_1.notifyOwner)(payload);
         return {
             success: delivered,
         };

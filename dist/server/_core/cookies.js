@@ -38,5 +38,6 @@ function getSessionCookieOptions(req) {
         path: "/",
         sameSite: "none",
         secure: isSecureRequest(req),
+        domain: undefined,
     };
 }
