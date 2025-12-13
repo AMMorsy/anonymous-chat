@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only server/_core/index.ts",
-    "build": "tsc",
+    "build": "npx tsc",
     "start": "node dist/server/_core/index.js"
   },
   "dependencies": {
