@@ -1,39 +1,34 @@
 Anon-Chat
 
 Anon-Chat is a lightweight, terminal-style anonymous chat application built with Node.js and Socket.IO.
-Users interact exclusively through typed commands inside a browser-based terminal interface.
+Users interact with the system exclusively through typed commands inside a browser-based terminal interface.
 
-The system is designed for simplicity, anonymity, and fast deployment.
+The project is intentionally minimal, transparent, and easy to reason about.
 
-Overview
+What This Project Is
 
-Anon-Chat provides real-time chat rooms without user accounts, cookies, or persistent storage.
-Rooms exist only in memory (development mode) and are destroyed when the server restarts.
+Anon-Chat provides:
 
-The project intentionally avoids frameworks on the frontend and databases on the backend to keep the architecture transparent and easy to extend.
+Anonymous real-time chat
 
-Core Features
+No accounts
 
-Anonymous chat (no login, no identity)
+No cookies
 
-Terminal-style web interface
+No sessions
 
-Real-time messaging via WebSockets
+No database (development mode)
 
-Command-based interaction model
+No frontend framework
 
-In-memory room management (DEV mode)
+Rooms exist in memory and are destroyed when the server restarts.
 
-Works behind Nginx and Cloudflare
+How Users Interact
 
-HTTPS-ready
+There are no buttons and no UI controls.
+Everything happens through typed commands.
 
-PM2 process management
-
-User Commands
-
-Users interact with the system using slash commands.
-
+Available Commands
 /help
 /create <room-name>
 /join <room-code>
@@ -42,21 +37,23 @@ Users interact with the system using slash commands.
 Command Behavior
 
 /help
-Displays available commands and usage.
+Displays all available commands and usage.
 
 /create <room-name>
 Creates a new chat room and automatically joins it.
 
 /join <room-code>
-Joins an existing room by its code.
+Joins an existing room using its code.
 
 /leave
 Leaves the current room.
 
-Any other text
-Is sent as a message to the current room.
+Any other text is treated as a chat message and sent to the active room.
 
-Technology Stack
+Architecture Overview
+
+Anon-Chat is split into two independent parts.
+
 Backend
 
 Node.js
@@ -67,27 +64,37 @@ Express
 
 Socket.IO
 
-PM2
+PM2 (process manager)
+
+Responsibilities:
+
+Room lifecycle
+
+Message broadcasting
+
+Command parsing
+
+WebSocket handling
 
 Frontend
 
-HTML
+Plain HTML
 
-CSS
+Plain CSS
 
 Vanilla JavaScript
 
-No framework, no build step
+No build step
 
-Infrastructure
+No framework
 
-Nginx (reverse proxy)
+Responsibilities:
 
-Cloudflare (DNS, SSL)
+Terminal-style interface
 
-HTTPS enforced
+Command input
 
-UFW firewall
+WebSocket client
 
 Project Structure
 anon-chat/
@@ -100,27 +107,26 @@ anon-chat/
 │   └── _core/
 │       └── index.ts
 │
-├── dist/                  # Compiled output
+├── dist/                  # Compiled backend output
 ├── package.json
 ├── tsconfig.json
-├── vite.config.ts
 └── README.md
 
 Local Development
-Install dependencies
+Install Dependencies
 npm install
 
-Build the backend
+Build Backend
 npm run build
 
-Start the server
+Start Server
 pm2 start dist/server/_core/index.js --name anon-chat
 
-Access the app
+Access Application
 http://localhost:3000
 
 Production Deployment
-Nginx Configuration Example
+Nginx Reverse Proxy
 server {
     listen 80;
     server_name chat.example.com;
@@ -143,34 +149,34 @@ ufw allow 80
 ufw allow 443
 ufw enable
 
-Development Mode Notes
+Development Mode Behavior
 
-Rooms are stored in memory only
+Rooms are stored in memory
 
 No database is required
 
-All rooms are destroyed on restart
+All rooms disappear on restart
 
-Designed for prototyping and controlled environments
+Designed for fast iteration and testing
 
-This behavior is intentional and simplifies early development.
+This behavior is intentional.
 
-Security Considerations
+Security Notes
 
-No authentication
+Anon-Chat does not provide:
 
-No cookies
+Authentication
 
-No session storage
+Authorization
 
-No message persistence
+Persistence
 
-No user tracking
+Encryption at rest
 
-This project is not intended for sensitive or regulated data.
+It is not intended for sensitive data.
 
 Example Session
-[SYSTEM] Socket connected
+[SYSTEM] Connected
 [SYSTEM] Type /help
 
 /create demo
@@ -178,25 +184,26 @@ Example Session
 
 anon-x93k: hello world
 
-Extension Ideas
+Extending the Project
 
-Persistent rooms (Redis / SQL)
+Possible next steps:
 
-Room expiration
+Redis-backed rooms
 
-Moderation commands
+Persistent chat history
+
+Room moderation
 
 Private rooms
 
 Multi-server scaling
 
-End-to-end encryption
-
-Tor / Onion service
+Tor / Onion deployment
 
 Author
 
-Built by Ahmed 
+AHMED MORSY
+
 
 License
 
