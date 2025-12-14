@@ -1,102 +1,96 @@
-Anon-Chat
+<h1>Anon-Chat</h1>
 
+<p>
 Anon-Chat is a lightweight, terminal-style anonymous chat application built with Node.js and Socket.IO.
-Users interact with the system exclusively through typed commands inside a browser-based terminal interface.
+Users interact with the system entirely through typed commands inside a browser-based terminal interface.
+</p>
 
-The project is intentionally minimal, transparent, and easy to reason about.
+<hr />
 
-What This Project Is
+<h2>What This Project Is</h2>
 
-Anon-Chat provides:
-
-Anonymous real-time chat
-
-No accounts
-
-No cookies
-
-No sessions
-
-No database (development mode)
-
-No frontend framework
-
+<p>
+Anon-Chat provides real-time anonymous chat with no accounts, no cookies, no sessions, and no frontend framework.
 Rooms exist in memory and are destroyed when the server restarts.
+</p>
 
-How Users Interact
+<ul>
+  <li>No authentication</li>
+  <li>No database (development mode)</li>
+  <li>No persistence</li>
+  <li>No UI buttons</li>
+</ul>
 
-There are no buttons and no UI controls.
-Everything happens through typed commands.
+<hr />
 
-Available Commands
+<h2>User Interaction</h2>
+
+<p>
+The interface is a terminal emulator. Users type commands to interact with the system.
+</p>
+
+<h3>Available Commands</h3>
+
+<pre>
 /help
-/create <room-name>
-/join <room-code>
+/create &lt;room-name&gt;
+/join &lt;room-code&gt;
 /leave
+</pre>
 
-Command Behavior
+<h3>Command Behavior</h3>
 
-/help
-Displays all available commands and usage.
+<p><strong>/help</strong><br />
+Displays available commands.</p>
 
-/create <room-name>
-Creates a new chat room and automatically joins it.
+<p><strong>/create &lt;room-name&gt;</strong><br />
+Creates a new chat room and automatically joins it.</p>
 
-/join <room-code>
-Joins an existing room using its code.
+<p><strong>/join &lt;room-code&gt;</strong><br />
+Joins an existing room.</p>
 
-/leave
-Leaves the current room.
+<p><strong>/leave</strong><br />
+Leaves the current room.</p>
 
-Any other text is treated as a chat message and sent to the active room.
+<p>
+Any other input is treated as a chat message.
+</p>
 
-Architecture Overview
+<hr />
 
-Anon-Chat is split into two independent parts.
+<h2>Architecture</h2>
 
-Backend
+<h3>Backend</h3>
 
-Node.js
+<ul>
+  <li>Node.js</li>
+  <li>TypeScript</li>
+  <li>Express</li>
+  <li>Socket.IO</li>
+  <li>PM2</li>
+</ul>
 
-TypeScript
+<p>
+Handles rooms, messages, WebSocket connections, and command parsing.
+</p>
 
-Express
+<h3>Frontend</h3>
 
-Socket.IO
+<ul>
+  <li>HTML</li>
+  <li>CSS</li>
+  <li>Vanilla JavaScript</li>
+</ul>
 
-PM2 (process manager)
+<p>
+Provides a terminal-style interface with no build step.
+</p>
 
-Responsibilities:
+<hr />
 
-Room lifecycle
+<h2>Project Structure</h2>
 
-Message broadcasting
-
-Command parsing
-
-WebSocket handling
-
-Frontend
-
-Plain HTML
-
-Plain CSS
-
-Vanilla JavaScript
-
-No build step
-
-No framework
-
-Responsibilities:
-
-Terminal-style interface
-
-Command input
-
-WebSocket client
-
-Project Structure
+<pre>
 anon-chat/
 ├── client/
 │   ├── index.html
@@ -107,26 +101,39 @@ anon-chat/
 │   └── _core/
 │       └── index.ts
 │
-├── dist/                  # Compiled backend output
+├── dist/
 ├── package.json
 ├── tsconfig.json
 └── README.md
+</pre>
 
-Local Development
-Install Dependencies
-npm install
+<hr />
 
-Build Backend
-npm run build
+<h2>Local Development</h2>
 
-Start Server
-pm2 start dist/server/_core/index.js --name anon-chat
+<h3>Install</h3>
 
-Access Application
-http://localhost:3000
+<pre>npm install</pre>
 
-Production Deployment
-Nginx Reverse Proxy
+<h3>Build</h3>
+
+<pre>npm run build</pre>
+
+<h3>Run</h3>
+
+<pre>pm2 start dist/server/_core/index.js --name anon-chat</pre>
+
+<h3>Open</h3>
+
+<pre>http://localhost:3000</pre>
+
+<hr />
+
+<h2>Production Deployment</h2>
+
+<h3>Nginx Reverse Proxy</h3>
+
+<pre>
 server {
     listen 80;
     server_name chat.example.com;
@@ -142,40 +149,41 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
+</pre>
 
-Firewall Rules
+<h3>Firewall</h3>
+
+<pre>
 ufw allow 22
 ufw allow 80
 ufw allow 443
 ufw enable
+</pre>
 
-Development Mode Behavior
+<hr />
 
-Rooms are stored in memory
+<h2>Development Mode Notes</h2>
 
-No database is required
+<ul>
+  <li>Rooms stored in memory</li>
+  <li>No persistence</li>
+  <li>Restart wipes all data</li>
+</ul>
 
-All rooms disappear on restart
+<hr />
 
-Designed for fast iteration and testing
+<h2>Security Notice</h2>
 
-This behavior is intentional.
+<p>
+This project is not designed for sensitive data. There is no encryption at rest,
+no authentication, and no access control.
+</p>
 
-Security Notes
+<hr />
 
-Anon-Chat does not provide:
+<h2>Example Session</h2>
 
-Authentication
-
-Authorization
-
-Persistence
-
-Encryption at rest
-
-It is not intended for sensitive data.
-
-Example Session
+<pre>
 [SYSTEM] Connected
 [SYSTEM] Type /help
 
@@ -183,28 +191,18 @@ Example Session
 [SYSTEM] Room created: demo-A7F2
 
 anon-x93k: hello world
+</pre>
 
-Extending the Project
+<hr />
 
-Possible next steps:
+<h2>Author</h2>
 
-Redis-backed rooms
+<p>
+AHMED MORSY<br />
+</p>
 
-Persistent chat history
+<hr />
 
-Room moderation
+<h2>License</h2>
 
-Private rooms
-
-Multi-server scaling
-
-Tor / Onion deployment
-
-Author
-
-AHMED MORSY
-
-
-License
-
-AMMorsy License
+<p>AMMorsy License</p>
