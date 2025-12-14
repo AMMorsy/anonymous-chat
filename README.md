@@ -1,52 +1,62 @@
-🕶️ Anon-Chat
+Anon-Chat
 
-Anon-Chat is a minimalist, terminal-style anonymous chat application built with Node.js + Socket.IO.
-Users interact entirely through slash commands (/create, /join, /help) in a retro terminal UI.
+Anon-Chat is a lightweight, terminal-style anonymous chat application built with Node.js and Socket.IO.
+Users interact exclusively through typed commands inside a browser-based terminal interface.
 
-No accounts. No tracking. No persistence.
-Rooms exist in memory (DEV mode) and vanish on restart.
+The system is designed for simplicity, anonymity, and fast deployment.
 
-✨ Features
+Overview
 
-🔐 Anonymous by default (auto-generated handles)
+Anon-Chat provides real-time chat rooms without user accounts, cookies, or persistent storage.
+Rooms exist only in memory (development mode) and are destroyed when the server restarts.
 
-🖥 Terminal-style web UI
+The project intentionally avoids frameworks on the frontend and databases on the backend to keep the architecture transparent and easy to extend.
 
-💬 Real-time chat via WebSockets (Socket.IO)
+Core Features
 
-🏗 In-memory room system (DEV mode)
+Anonymous chat (no login, no identity)
 
-⚡ Zero database required
+Terminal-style web interface
 
-🌍 Works behind Nginx + Cloudflare
+Real-time messaging via WebSockets
 
-🔁 Hot-reload friendly with PM2
+Command-based interaction model
 
-🧠 How It Works
-User Flow
+In-memory room management (DEV mode)
 
-User opens the site
+Works behind Nginx and Cloudflare
 
-Socket connects automatically
+HTTPS-ready
 
-User types commands:
+PM2 process management
 
-/create <roomname>
+User Commands
 
-/join <roomcode>
+Users interact with the system using slash commands.
 
-Messages are broadcast in real time
+/help
+/create <room-name>
+/join <room-code>
+/leave
 
-Rooms live in memory only
+Command Behavior
 
-🧪 Supported Commands
-Command	Description
-/help	Show available commands
-/create <roomname>	Create a new chat room
-/join <roomcode>	Join an existing room
-/leave	Leave current room
-<message>	Send message to room
-🏗 Tech Stack
+/help
+Displays available commands and usage.
+
+/create <room-name>
+Creates a new chat room and automatically joins it.
+
+/join <room-code>
+Joins an existing room by its code.
+
+/leave
+Leaves the current room.
+
+Any other text
+Is sent as a message to the current room.
+
+Technology Stack
 Backend
 
 Node.js
@@ -57,13 +67,15 @@ Express
 
 Socket.IO
 
-PM2 (process manager)
+PM2
 
 Frontend
 
-Vanilla HTML / CSS / JS
+HTML
 
-Terminal-style UI
+CSS
+
+Vanilla JavaScript
 
 No framework, no build step
 
@@ -71,13 +83,13 @@ Infrastructure
 
 Nginx (reverse proxy)
 
-Cloudflare (DNS + SSL)
+Cloudflare (DNS, SSL)
 
 HTTPS enforced
 
 UFW firewall
 
-📁 Project Structure
+Project Structure
 anon-chat/
 ├── client/
 │   ├── index.html
@@ -88,27 +100,27 @@ anon-chat/
 │   └── _core/
 │       └── index.ts
 │
-├── dist/                # compiled output
+├── dist/                  # Compiled output
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
 └── README.md
 
-🚀 Running Locally
-1️⃣ Install dependencies
+Local Development
+Install dependencies
 npm install
 
-2️⃣ Build backend
+Build the backend
 npm run build
 
-3️⃣ Start with PM2
+Start the server
 pm2 start dist/server/_core/index.js --name anon-chat
 
-4️⃣ Open in browser
+Access the app
 http://localhost:3000
 
-🌐 Production Deployment
-Nginx (example)
+Production Deployment
+Nginx Configuration Example
 server {
     listen 80;
     server_name chat.example.com;
@@ -125,75 +137,67 @@ server {
     }
 }
 
-Firewall (UFW)
+Firewall Rules
 ufw allow 22
 ufw allow 80
 ufw allow 443
 ufw enable
 
-🔧 DEV Mode Notes
+Development Mode Notes
 
-Rooms are in-memory only
+Rooms are stored in memory only
 
-Server restart clears all rooms
+No database is required
 
-No database required
+All rooms are destroyed on restart
 
-Ideal for:
+Designed for prototyping and controlled environments
 
-Prototyping
+This behavior is intentional and simplifies early development.
 
-Demos
-
-Hackathons
-
-Temporary anonymous chats
-
-Database integration can be added later (Postgres / Redis / SQLite)
-
-🔒 Security Notes
+Security Considerations
 
 No authentication
 
 No cookies
 
-No tracking
+No session storage
 
 No message persistence
 
-Anonymous by design
+No user tracking
 
-⚠️ Not suitable for sensitive or regulated data
+This project is not intended for sensitive or regulated data.
 
-📸 UI Preview
+Example Session
 [SYSTEM] Socket connected
 [SYSTEM] Type /help
 
-/create test
-[SYSTEM] Room created: test-4K2F
-[SYSTEM] Joined room
+/create demo
+[SYSTEM] Room created: demo-A7F2
 
-anon-x92k: hello world
+anon-x93k: hello world
 
-🧭 Roadmap (Optional)
+Extension Ideas
 
- Persistent rooms (Redis / DB)
+Persistent rooms (Redis / SQL)
 
- Room expiration timers
+Room expiration
 
- Rate limiting
+Moderation commands
 
- Private rooms
+Private rooms
 
- Read-only spectators
+Multi-server scaling
 
- Admin moderation commands
+End-to-end encryption
 
-🧑‍💻 Author
+Tor / Onion service
 
-Built by Mohamed (Kottab.ai)
-Terminal mindset. Minimalism. Control.
+Author
 
-📄 License
+Built by Ahmed 
 
-MIT — use it, fork it, break it, rebuild it.
+License
+
+AMMorsy License
