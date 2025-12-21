@@ -1,36 +1,31 @@
 import { z } from "zod";
 import { notifyOwner } from "./notification";
 import { adminProcedure, publicProcedure, router } from "./trpc";
+import type { NotificationPayload } from "./notification";
 
 export const systemRouter = router({
   health: publicProcedure
     .input(
-      z.object({
-        timestamp: z.number().min(0, "timestamp cannot be negative"),
-      })
+      z
+        .object({
+          timestamp: z.number().min(0),
+        })
+        .optional()
     )
     .query(() => ({
       ok: true,
+      service: "anon-chat-backend",
     })),
 
   notifyOwner: adminProcedure
     .input(
       z.object({
-        title: z.string().min(1, "title is required"),
-        content: z.string().min(1, "content is required"),
+        title: z.string().min(1),
+        content: z.string().min(1),
       })
     )
     .mutation(async ({ input }) => {
-      // Explicitly satisfy NotificationPayload at type level
-      const payload = {
-        title: input.title,
-        content: input.content,
-      };
-
-      const delivered = await notifyOwner(payload);
-
-      return {
-        success: delivered,
-      } as const;
+      const delivered = await notifyOwner(input as NotificationPayload);
+      return { success: delivered } as const;
     }),
 });

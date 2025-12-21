@@ -1,11 +1,12 @@
+import path from "path";
 import express from "express";
-import http from "http";
-
-// Stub for dev-only Vite integration – not used in production
-export async function setupVite(app: express.Express, server: http.Server) {
-  return;
-}
 
 export function serveStatic(app: express.Express) {
-  return;
+  const distPath = path.resolve(process.cwd(), "dist");
+
+  app.use(express.static(distPath));
+
+  app.get("*", (_, res) => {
+    res.sendFile(path.join(distPath, "index.html"));
+  });
 }

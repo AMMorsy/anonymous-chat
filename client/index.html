@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Anon Chat</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0b0b0b;
+      color: #a9ff9f;
+      font-family: monospace;
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+    }
+    .terminal {
+      width: 90vw;
+      height: 80vh;
+      background: #000;
+      border-radius: 8px;
+      padding: 16px;
+      box-sizing: border-box;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    }
+    #log {
+      flex: 1;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      margin-bottom: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    #input-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #prompt {
+      opacity: 0.8;
+    }
+    #input {
+      flex: 1;
+      background: #000;
+      border: 1px solid rgba(169,255,159,0.25);
+      outline: none;
+      color: #a9ff9f;
+      font-family: monospace;
+      font-size: 14px;
+      padding: 8px 10px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal">
+    <div id="log"></div>
+    <div id="input-line">
+      <span id="prompt">anon@chat:~$</span>
+      <input id="input" type="text" autocomplete="off" placeholder="type command or message" />
+    </div>
+  </div>
+
+  <!-- socket.io is served by backend automatically at /socket.io/socket.io.js -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/client.js"></script>
+</body>
+</html>

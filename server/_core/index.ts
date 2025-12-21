@@ -1,43 +1,30 @@
 import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
-import net from "net";
 import path from "path";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
+
 import { appRouter } from "../routers";
 import { createContext } from "./context";
-import { setupVite } from "./vite";
+import { registerOAuthRoutes } from "./oauth";
 import { setupSocketIO } from "../socket";
-
-function isPortAvailable(port: number): Promise<boolean> {
-  return new Promise(resolve => {
-    const server = net.createServer();
-    server.listen(port, () => {
-      server.close(() => resolve(true));
-    });
-    server.on("error", () => resolve(false));
-  });
-}
-
-async function findAvailablePort(startPort: number = 3000): Promise<number> {
-  for (let port = startPort; port < startPort + 20; port++) {
-    if (await isPortAvailable(port)) {
-      return port;
-    }
-  }
-  throw new Error(`No available port found starting from ${startPort}`);
-}
 
 async function startServer() {
   const app = express();
   const server = createServer(app);
 
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
+
+const CLIENT_DIR = path.join(process.cwd(), "client");
+
+app.use(express.static(CLIENT_DIR));
+
+  // OAuth
   registerOAuthRoutes(app);
 
+  // tRPC
   app.use(
     "/api/trpc",
     createExpressMiddleware({
@@ -46,24 +33,22 @@ async function startServer() {
     })
   );
 
+  // Socket.IO
   setupSocketIO(server);
 
-  if (process.env.NODE_ENV === "development") {
-    await setupVite(app, server);
-  } else {
-    // ✅ SERVE FRONTEND BUILD
-const clientDist = path.resolve(__dirname, "../../../../client/dist");
+  // Frontend (STATIC)
+  const clientPath = path.join(process.cwd(), "client");
+  app.use(express.static(clientPath));
 
-    app.use(express.static(clientDist));
+  app.get("*", (_, res) => {
+    res.sendFile(path.join(clientPath, "index.html"));
+  });
 
-    app.get("*", (_req, res) => {
-      res.sendFile(path.join(clientDist, "index.html"));
-    });
-  }
+app.get("*", (_, res) => {
+  res.sendFile(path.join(CLIENT_DIR, "index.html"));
+});
 
-  const preferredPort = parseInt(process.env.PORT || "3000");
-  const port = await findAvailablePort(preferredPort);
-
+  const port = Number(process.env.PORT) || 3000;
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
   });

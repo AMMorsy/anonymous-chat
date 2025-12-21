@@ -1,172 +1,110 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupSocketIO = setupSocketIO;
 const socket_io_1 = require("socket.io");
-const db_1 = require("./db");
+const crypto_1 = __importDefault(require("crypto"));
 function setupSocketIO(httpServer) {
     const io = new socket_io_1.Server(httpServer, {
-        cors: {
-            origin: "*",
-            methods: ["GET", "POST"],
-        },
+        cors: { origin: "*" },
         path: "/socket.io/",
     });
-    // Store active connections: socketId -> { userId, roomCode, handle }
-    const activeConnections = new Map();
+    const rooms = new Map();
+    const socketRoom = new Map(); // socket.id -> roomId
+    function sys(socket, msg) {
+        socket.emit("system", msg);
+    }
     io.on("connection", (socket) => {
-        console.log(`[Socket] Client connected: ${socket.id}`);
-        // Join room
-        socket.on("join-room", async (data) => {
-            try {
-                const { roomCode, userId } = data;
-                // Verify room exists
-                const room = await (0, db_1.getRoomByCode)(roomCode);
-                if (!room) {
-                    socket.emit("error", { message: "Room not found" });
-                    return;
-                }
-                // Get or create session
-                let session = await (0, db_1.getRoomSession)(room.id, userId);
-                if (!session) {
-                    session = await (0, db_1.createRoomSession)(room.id, userId);
-                }
-                if (!session) {
-                    socket.emit("error", { message: "Failed to create session" });
-                    return;
-                }
-                // Join socket room
-                socket.join(roomCode);
-                activeConnections.set(socket.id, {
-                    userId,
-                    roomCode,
-                    handle: session.anonymousHandle,
-                });
-                // Update activity
-                await (0, db_1.updateRoomActivity)(room.id);
-                await (0, db_1.updateSessionActivity)(session.id);
-                // Get all active users in room
-                const activeSessions = await (0, db_1.getActiveRoomSessions)(room.id);
-                const activeUsers = activeSessions.map(s => s.anonymousHandle);
-                // Notify user of successful join
-                socket.emit("joined-room", {
-                    roomCode,
-                    handle: session.anonymousHandle,
-                    activeUsers,
-                });
-                // Notify others in room
-                socket.to(roomCode).emit("user-joined", {
-                    handle: session.anonymousHandle,
-                    timestamp: Date.now(),
-                });
-                console.log(`[Socket] User ${session.anonymousHandle} joined room ${roomCode}`);
+        sys(socket, "[SYSTEM] Socket connected");
+        sys(socket, "[SYSTEM] Type /help");
+        sys(socket, "[SYSTEM] /create <room_name>");
+        sys(socket, "[SYSTEM] /join <room_id>");
+        sys(socket, "[SYSTEM] /leave");
+        socket.on("command", (raw) => {
+            const [cmd, ...rest] = raw.trim().split(" ");
+            const arg = rest.join(" ").trim();
+            // ---------------- HELP ----------------
+            if (cmd === "/help") {
+                sys(socket, "[SYSTEM] /create <room_name>");
+                sys(socket, "[SYSTEM] /join <room_id>");
+                sys(socket, "[SYSTEM] /leave");
+                sys(socket, "[SYSTEM] Anything else = message");
+                return;
             }
-            catch (error) {
-                console.error("[Socket] Error joining room:", error);
-                socket.emit("error", { message: "Failed to join room" });
-            }
-        });
-        // Send message
-        socket.on("send-message", async (data) => {
-            try {
-                const connection = activeConnections.get(socket.id);
-                if (!connection) {
-                    socket.emit("error", { message: "Not in a room" });
+            // ---------------- CREATE ----------------
+            if (cmd === "/create") {
+                if (!arg) {
+                    sys(socket, "[SYSTEM] ERROR: /create <room_name>");
                     return;
                 }
-                const { roomCode, handle } = connection;
-                // Create message object
-                const chatMessage = {
-                    id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                    roomCode,
-                    handle,
-                    message: data.message,
-                    timestamp: Date.now(),
+                const roomId = crypto_1.default.randomBytes(3).toString("hex");
+                const room = {
+                    id: roomId,
+                    name: arg,
+                    members: new Set(),
                 };
-                // Broadcast to room (including sender)
-                io.to(roomCode).emit("new-message", chatMessage);
-                // Update room activity
-                const room = await (0, db_1.getRoomByCode)(roomCode);
-                if (room) {
-                    await (0, db_1.updateRoomActivity)(room.id);
-                }
-                console.log(`[Socket] Message from ${handle} in ${roomCode}: ${data.message}`);
+                rooms.set(roomId, room);
+                socket.join(roomId);
+                room.members.add(socket.id);
+                socketRoom.set(socket.id, roomId);
+                sys(socket, `[SYSTEM] Room created`);
+                sys(socket, `[SYSTEM] Room name: ${arg}`);
+                sys(socket, `[SYSTEM] Room ID: ${roomId}`);
+                sys(socket, `[SYSTEM] Joined room ${roomId}`);
+                return;
             }
-            catch (error) {
-                console.error("[Socket] Error sending message:", error);
-                socket.emit("error", { message: "Failed to send message" });
-            }
-        });
-        // Leave room
-        socket.on("leave-room", async () => {
-            try {
-                const connection = activeConnections.get(socket.id);
-                if (!connection) {
+            // ---------------- JOIN ----------------
+            if (cmd === "/join") {
+                if (!arg) {
+                    sys(socket, "[SYSTEM] ERROR: /join <room_id>");
                     return;
                 }
-                const { userId, roomCode, handle } = connection;
-                // Get room
-                const room = await (0, db_1.getRoomByCode)(roomCode);
-                if (room) {
-                    await (0, db_1.deactivateRoomSession)(room.id, userId);
-                }
-                // Leave socket room
-                socket.leave(roomCode);
-                activeConnections.delete(socket.id);
-                // Notify others
-                socket.to(roomCode).emit("user-left", {
-                    handle,
-                    timestamp: Date.now(),
-                });
-                socket.emit("left-room", { roomCode });
-                console.log(`[Socket] User ${handle} left room ${roomCode}`);
-            }
-            catch (error) {
-                console.error("[Socket] Error leaving room:", error);
-            }
-        });
-        // Heartbeat to update activity
-        socket.on("heartbeat", async () => {
-            try {
-                const connection = activeConnections.get(socket.id);
-                if (!connection)
+                const room = rooms.get(arg);
+                if (!room) {
+                    sys(socket, "[SYSTEM] ERROR: Room not found");
                     return;
-                const { userId, roomCode } = connection;
-                const room = await (0, db_1.getRoomByCode)(roomCode);
-                if (room) {
-                    const session = await (0, db_1.getRoomSession)(room.id, userId);
-                    if (session) {
-                        await (0, db_1.updateSessionActivity)(session.id);
-                    }
                 }
+                socket.join(room.id);
+                room.members.add(socket.id);
+                socketRoom.set(socket.id, room.id);
+                sys(socket, `[SYSTEM] Joined room ${room.id} (${room.name})`);
+                socket.to(room.id).emit("message", `[SYSTEM] User joined`);
+                return;
             }
-            catch (error) {
-                console.error("[Socket] Error updating heartbeat:", error);
+            // ---------------- LEAVE ----------------
+            if (cmd === "/leave") {
+                const roomId = socketRoom.get(socket.id);
+                if (!roomId) {
+                    sys(socket, "[SYSTEM] ERROR: Not in a room");
+                    return;
+                }
+                socket.leave(roomId);
+                socketRoom.delete(socket.id);
+                rooms.get(roomId)?.members.delete(socket.id);
+                sys(socket, `[SYSTEM] Left room ${roomId}`);
+                socket.to(roomId).emit("message", `[SYSTEM] User left`);
+                return;
             }
+            sys(socket, "[SYSTEM] ERROR: Unknown command");
         });
-        // Disconnect
-        socket.on("disconnect", async () => {
-            try {
-                const connection = activeConnections.get(socket.id);
-                if (connection) {
-                    const { userId, roomCode, handle } = connection;
-                    const room = await (0, db_1.getRoomByCode)(roomCode);
-                    if (room) {
-                        await (0, db_1.deactivateRoomSession)(room.id, userId);
-                    }
-                    socket.to(roomCode).emit("user-left", {
-                        handle,
-                        timestamp: Date.now(),
-                    });
-                    activeConnections.delete(socket.id);
-                    console.log(`[Socket] User ${handle} disconnected from ${roomCode}`);
-                }
-                console.log(`[Socket] Client disconnected: ${socket.id}`);
+        socket.on("message", (msg) => {
+            const roomId = socketRoom.get(socket.id);
+            if (!roomId) {
+                sys(socket, "[SYSTEM] ERROR: Join a room first");
+                return;
             }
-            catch (error) {
-                console.error("[Socket] Error handling disconnect:", error);
+            io.to(roomId).emit("message", msg);
+        });
+        socket.on("disconnect", () => {
+            const roomId = socketRoom.get(socket.id);
+            if (roomId) {
+                rooms.get(roomId)?.members.delete(socket.id);
+                socketRoom.delete(socket.id);
+                socket.to(roomId).emit("message", "[SYSTEM] User disconnected");
             }
         });
     });
-    console.log("[Socket] Socket.IO server initialized");
-    return io;
+    console.log("[Socket] Ready");
 }
